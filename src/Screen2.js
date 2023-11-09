@@ -1,52 +1,17 @@
 import { FlatList, Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
-import { todos } from './todos';
-import headerCustom from './headerCustom';
 import axios from 'axios';
 
 const Screen2 = ({ navigation, route }) => {
-    const dataApi = setJobs();
-
-    useEffect(() => {
-        const getJobs = () => {
-            axios.get('https://65444c9e5a0b4b04436c3d4a.mockapi.io/api/v1/jobs')
-            .then(response => {
-                return response.data;
-            })
-            .catch(error => {
-                console.error("error")
-            })
-        }
-    },[])
+    const [dataApi, setDataApi] = useState([]);
     console.log("data : ", dataApi)
-
+    const [jobs, setJobs] = useState([])
     const [search, setSearch] = useState('')
-    const [jobs, setJobs] = useState(todos)
     const [filteredJobs, setFilteredJobs] = useState(jobs);
-
     const { userName, updatedJob, newJob } = route.params;
 
-    // Xử lý thông tin công việc sau khi quay lại từ Screen3
-    useEffect(() => {
-        if (updatedJob) {
-            // Cập nhật công việc đã được chỉnh sửa
-            const updatedJobs = jobs.map((job) =>
-                job.id === updatedJob.id ? updatedJob : job
-            );
-            setJobs(updatedJobs);
-        } else if (newJob) {
-            // Thêm công việc mới
-            setJobs([...jobs, newJob]);
-        }
-    }, [updatedJob, newJob]);
 
-    /* Chức năng Search */
-    useEffect(() => {
-        const filtered = jobs.filter((item) =>
-            item.job.toLowerCase().includes(search.toLowerCase())
-        );
-        setFilteredJobs(filtered);
-    }, [search, jobs]);
+    console.log("Job : ", jobs)
 
     // Tùy chỉnh headerRight để hiển thị tên người dùng
     useEffect(() => {
@@ -74,7 +39,40 @@ const Screen2 = ({ navigation, route }) => {
                 </View>
             ),
         });
-    }, [userName, navigation]);
+
+        const getJobs = () => {
+            axios.get('https://65444c9e5a0b4b04436c3d4a.mockapi.io/api/v1/jobs')
+            .then(response => {
+                setJobs(response.data);
+                return response.data;
+            })
+            .catch(error => { 
+                console.error("error", error)
+            })
+        }
+        getJobs();
+    }, [userName, navigation, dataApi]);
+    // Xử lý thông tin công việc sau khi quay lại từ Screen3
+    useEffect(() => {
+        if (updatedJob) {
+            // Cập nhật công việc đã được chỉnh sửa
+            const updatedJobs = jobs.map((job) =>
+                job.id === updatedJob.id ? updatedJob : job
+            ); 
+            setJobs(updatedJobs);
+        } else if (newJob) {
+            // Thêm công việc mới
+            setJobs([...jobs, newJob]);
+        }
+    }, [updatedJob, newJob]);
+
+    /* Chức năng Search */
+    /* useEffect(() => {
+        const filtered = jobs.filter((item) =>
+            item.job.toLowerCase().includes(search.toLowerCase())
+        ); 
+        if(jobs) setFilteredJobs(filtered);
+    }, [search, jobs]); */ 
     return (
         <View
             style={{
@@ -113,7 +111,7 @@ const Screen2 = ({ navigation, route }) => {
                 />
             </View>
             <FlatList 
-                data={filteredJobs}
+                data={jobs}
                 renderItem={({ item }) => (
                     <View
                         style={{
@@ -139,7 +137,7 @@ const Screen2 = ({ navigation, route }) => {
                             }}
                         >
                             <View>
-                                {item.state ? <Text style={{ fontSize: 17, color: 'green', fontWeight: 700 }}>✓</Text> : null}
+                                {item.status ? <Text style={{ fontSize: 17, color: 'green', fontWeight: 700 }}>✓</Text> : null}
                             </View>
                         </Pressable>
                         <Text
@@ -150,7 +148,7 @@ const Screen2 = ({ navigation, route }) => {
                                 fontWeight: 700
                             }}
                         >
-                            {item.job}
+                            {item.jobName}
                         </Text>
                         <Pressable
                             onPress={() => navigation.navigate('Screen3', {

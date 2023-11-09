@@ -20,16 +20,25 @@ const Screen3 = ({ navigation, route }) => {
             const updatedJob = {...selectedJob, 'job' : jobTitle}
             navigation.navigate('Screen2', { updatedJob})
         } else {
-            /* them moi */
-            const maxId = Math.max(...todos.map(todo => todo.id));
-            const newJob = {
-                'id' : maxId +1,
-                'job' : jobTitle,
-                'state' : false
-            }
-            navigation.navigate('Screen2', {newJob});
+            addJobToAPI();
+            navigation.navigate('Screen2', {jobTitle});
         }
     }
+
+    const addJobToAPI = async () => {
+        try {
+          const newJob = {
+            id: 123, 
+            jobName: jobTitle,
+            status: false
+          };
+    
+          const response = await axios.post('https://65444c9e5a0b4b04436c3d4a.mockapi.io/api/v1/jobs', newJob);
+          console.log('New job added:', response.data);
+        } catch (error) {
+          console.error('Error adding new job:', error);
+        }
+      };
     return (
         <View
             style={{ 
